@@ -85,7 +85,6 @@
         }
       })();
       (function(){
-        // Hero video robust retry loader (mirrors gallery thumbnail retry logic)
         var hv = document.getElementById('hero-video');
         if(!hv) return;
         var source = hv.querySelector('source');
@@ -102,24 +101,19 @@
           try{ hv.muted = true; hv.playsInline = true; hv.setAttribute('playsinline',''); hv.setAttribute('muted',''); }catch(e){}
           var baseSrc = source && source.getAttribute('src');
           if(!baseSrc){ return; }
-          // Bust cache each attempt to recover from stalled decodes
           var bustSrc = baseSrc + (baseSrc.indexOf('?') === -1 ? '?hv=' + attempt : '&hv=' + attempt);
           try{ if(source) source.setAttribute('src', bustSrc); }catch(e){}
           try{ hv.load(); }catch(e){}
-          // Attempt play ASAP and again after a short delay
           try{ var p = hv.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
           setTimeout(function(){ if(!loaded){ try{ var p2 = hv.play(); if(p2 && p2.catch) p2.catch(function(){}); }catch(e){} } }, 400);
-          // Timeout watchdog: if not ready, schedule another attempt
           setTimeout(function(){ if(!loaded){ tryLoad(); } }, 1200);
         }
         hv.addEventListener('canplay', markLoaded);
         hv.addEventListener('loadeddata', markLoaded);
         hv.addEventListener('error', function(){ if(!loaded){ setTimeout(tryLoad, 350); } });
-        // Visibility pause to save resources
         document.addEventListener('visibilitychange', function(){
           if(document.hidden){ try{ hv.pause(); }catch(e){} } else { if(loaded){ try{ var p = hv.play(); if(p && p.catch) p.catch(function(){}); }catch(e){} } }
         });
-        // Kick off initial load
         tryLoad();
       })();
       (function(){
